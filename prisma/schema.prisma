@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  shops     Shop[]
+  reviews   Review[]
+}
+
+model Shop {
+  id              String   @id @default(cuid())
+  name            String
+  description     String
+  category        String
+  address         String
+  city            String
+  country         String
+  lat             Float
+  lng             Float
+  phone           String?
+  website         String?
+  instagram       String?
+  images          String   @default("[]")
+  photoAlbums     String   @default("[]")
+  ownerId         String
+  owner           User     @relation(fields: [ownerId], references: [id])
+  reviews         Review[]
+  isPaid          Boolean  @default(false)
+  stripeSessionId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  avgRating       Float    @default(0)
+  reviewCount     Int      @default(0)
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int
+  comment   String
+  userId    String
+  shopId    String
+  user      User     @relation(fields: [userId], references: [id])
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, shopId])
+}
