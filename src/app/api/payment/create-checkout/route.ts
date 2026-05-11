@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { stripe, SHOP_PRICE_CENTS } from "@/lib/stripe"
+import { createCheckout } from "@/lib/lemonsqueezy"
 import { prisma } from "@/lib/db"
 import { auth } from "@/auth"
 
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   const origin = process.env.NEXTAUTH_URL ?? "http://localhost:3000"
 
-  // Check if this is the user's first shop (free)
+  // First shop is free
   const paidShopsCount = await prisma.shop.count({
     where: { ownerId: session.user.id, isPaid: true },
   })
@@ -37,30 +37,13 @@ export async function POST(req: Request) {
     })
   }
 
-  const checkout = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [
-      {
-        price_data: {
-          currency: "usd",
-          unit_amount: SHOP_PRICE_CENTS,
-          product_data: {
-            name: `Publicación de tienda: ${shop.name}`,
-            description: "Pago único para publicar tu tienda en The Little Shop",
-          },
-        },
-        quantity: 1,
-      },
-    ],
-    metadata: { shopId, userId: session.user.id },
-    success_url: `${origin}/payment/success?shop_id=${shopId}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/shops/new?step=4&shop_id=${shopId}&cancelled=1`,
+  const checkoutUrl = await createCheckout({
+    shopId,
+    shopName: shop.name,
+    userId: session.user.id,
+    successUrl: `${origin}/payment/success?shop_id=${shopId}`,
+    cancelUrl: `${origin}/shops/new?step=4&shop_id=${shopId}&cancelled=1`,
   })
 
-  await prisma.shop.update({
-    where: { id: shopId },
-    data: { stripeSessionId: checkout.id },
-  })
-
-  return NextResponse.json({ url: checkout.url })
+  return NextResponse.json({ url: checkoutUrl })
 }
