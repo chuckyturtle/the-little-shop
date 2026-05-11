@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.the_little_shop.twa",
+        "sha256_cert_fingerprints": ["D8:62:27:E6:63:37:79:C3:99:50:1C:E7:97:13:E0:78:5D:64:FF:E4:91:37:AA:00:E4:CD:1F:A9:39:93:45:31"]
+      }
+    }]
