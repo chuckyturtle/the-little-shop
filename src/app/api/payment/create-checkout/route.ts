@@ -21,6 +21,22 @@ export async function POST(req: Request) {
 
   const origin = process.env.NEXTAUTH_URL ?? "http://localhost:3000"
 
+  // Check if this is the user's first shop (free)
+  const paidShopsCount = await prisma.shop.count({
+    where: { ownerId: session.user.id, isPaid: true },
+  })
+
+  if (paidShopsCount === 0) {
+    await prisma.shop.update({
+      where: { id: shopId },
+      data: { isPaid: true },
+    })
+    return NextResponse.json({
+      url: `${origin}/payment/success?shop_id=${shopId}&free=1`,
+      free: true,
+    })
+  }
+
   const checkout = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items: [

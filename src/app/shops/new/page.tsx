@@ -49,6 +49,7 @@ export default function NewShopPage() {
   const [shopId, setShopId] = useState<string | null>(null)
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
+  const [isFree, setIsFree] = useState<boolean | null>(null)
 
   const [draft, setDraft] = useState<ShopDraft>({
     name: "",
@@ -129,7 +130,13 @@ export default function NewShopPage() {
         }
       }
     }
-    setStep((s) => Math.min(s + 1, STEPS.length - 1))
+    const nextStep = Math.min(step + 1, STEPS.length - 1)
+    setStep(nextStep)
+    if (nextStep === 4 && isFree === null) {
+      fetch("/api/payment/check-free")
+        .then((r) => r.json())
+        .then((d) => setIsFree(d.eligible))
+    }
   }
 
   async function handlePay() {
@@ -402,22 +409,40 @@ export default function NewShopPage() {
         {step === 4 && (
           <div className="space-y-6 text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-terra-50 text-terra-500 text-3xl mx-auto">
-              💳
+              {isFree ? "🎁" : "💳"}
             </div>
             <div>
               <h2 className="text-xl font-bold text-forest-900">Publicar mi tienda</h2>
-              <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
-                Tu tienda quedará publicada en el mapa global de forma permanente por un pago único.
-              </p>
+              {isFree ? (
+                <p className="text-forest-600 text-sm mt-2 max-w-sm mx-auto font-medium">
+                  Tu primera tienda es completamente gratis. ¡Publícala ahora sin costo!
+                </p>
+              ) : (
+                <p className="text-gray-500 text-sm mt-2 max-w-sm mx-auto">
+                  Tu tienda quedará publicada en el mapa global de forma permanente por un pago único.
+                </p>
+              )}
             </div>
 
             <div className="bg-forest-50 rounded-2xl p-5 text-left border border-forest-100">
               <div className="flex justify-between items-center mb-3">
                 <span className="text-gray-700 font-medium">{draft.name || "Tu tienda"}</span>
+                {isFree && (
+                  <span className="bg-forest-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                    GRATIS
+                  </span>
+                )}
               </div>
               <div className="flex justify-between items-center border-t border-forest-100 pt-3">
                 <span className="text-gray-600">Publicación única</span>
-                <span className="text-2xl font-bold text-forest-700">$5 USD</span>
+                {isFree ? (
+                  <div className="text-right">
+                    <span className="text-gray-400 line-through text-sm mr-2">$5 USD</span>
+                    <span className="text-2xl font-bold text-forest-700">$0</span>
+                  </div>
+                ) : (
+                  <span className="text-2xl font-bold text-forest-700">$5 USD</span>
+                )}
               </div>
             </div>
 
@@ -426,12 +451,17 @@ export default function NewShopPage() {
               disabled={loading}
               className="w-full bg-terra-500 hover:bg-terra-600 text-white font-semibold py-3.5 px-6 rounded-xl transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <CreditCard className="w-5 h-5" />
-              {loading ? "Procesando…" : "Pagar $5 y publicar mi tienda"}
+              {isFree ? (
+                <>🎁 {loading ? "Publicando…" : "Publicar mi tienda gratis"}</>
+              ) : (
+                <><CreditCard className="w-5 h-5" /> {loading ? "Procesando…" : "Pagar $5 y publicar mi tienda"}</>
+              )}
             </button>
 
             <p className="text-xs text-gray-400">
-              Pago seguro a través de Stripe · Sin suscripciones ni cargos extra
+              {isFree
+                ? "Primera tienda gratis · Segunda tienda en adelante $5 USD"
+                : "Pago seguro a través de Stripe · Sin suscripciones ni cargos extra"}
             </p>
           </div>
         )}
