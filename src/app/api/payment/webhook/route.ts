@@ -1,29 +1,28 @@
 import { NextResponse } from "next/server"
+import { stripe } from "@/lib/stripe"
 import { prisma } from "@/lib/db"
-import crypto from "crypto"
+import Stripe from "stripe"
 
 export async function POST(req: Request) {
   const body = await req.text()
-  const signature = req.headers.get("x-signature")
-  const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET
+  const sig = req.headers.get("stripe-signature")
 
-  if (!signature || !secret) {
+  if (!sig || !process.env.STRIPE_WEBHOOK_SECRET) {
     return NextResponse.json({ error: "No signature" }, { status: 400 })
   }
 
-  const digest = crypto.createHmac("sha256", secret).update(body).digest("hex")
-  if (digest !== signature) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 400 })
+  let event: Stripe.Event
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET)
+  } catch {
+    return NextResponse.json({ error: "Webhook verification failed" }, { status: 400 })
   }
 
-  const payload = JSON.parse(body)
-  const eventName: string = payload.meta?.event_name
+  if (event.type === "checkout.session.completed") {
+    const cs = event.data.object as Stripe.Checkout.Session
+    const shopId = cs.metadata?.shopId
 
-  if (eventName === "order_created") {
-    const status: string = payload.data?.attributes?.status
-    const shopId: string | undefined = payload.meta?.custom_data?.shopId
-
-    if (status === "paid" && shopId) {
+    if (shopId && cs.payment_status === "paid") {
       await prisma.shop.update({
         where: { id: shopId },
         data: { isPaid: true },
