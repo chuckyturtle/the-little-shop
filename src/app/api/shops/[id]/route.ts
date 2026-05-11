@@ -24,6 +24,21 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   })
 }
 
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 })
+
+  const { id } = await params
+  const shop = await prisma.shop.findUnique({ where: { id } })
+  if (!shop) return NextResponse.json({ error: "No encontrada" }, { status: 404 })
+  if (shop.ownerId !== session.user.id) {
+    return NextResponse.json({ error: "Prohibido" }, { status: 403 })
+  }
+
+  await prisma.shop.delete({ where: { id } })
+  return NextResponse.json({ success: true })
+}
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: "No autorizado" }, { status: 401 })

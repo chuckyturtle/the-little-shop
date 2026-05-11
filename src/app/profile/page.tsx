@@ -5,6 +5,7 @@ import { ShopCard } from "@/components/ShopCard"
 import { StarRating } from "@/components/StarRating"
 import { User, Store, MessageSquare, Pencil } from "lucide-react"
 import Link from "next/link"
+import { DeleteShopButton } from "@/components/DeleteShopButton"
 
 export const metadata = { title: "Mi perfil — The Little Shop" }
 
@@ -115,13 +116,16 @@ export default async function ProfilePage() {
                 {paidShops.map((s) => (
                   <div key={s.id} className="relative group">
                     <ShopCard {...s} images={JSON.parse(s.images) as string[]} />
-                    <Link
-                      href={`/shops/${s.id}/edit`}
-                      className="absolute top-3 right-3 flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-forest-700 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Pencil className="w-3 h-3" />
-                      Editar
-                    </Link>
+                    <div className="absolute top-3 right-3 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Link
+                        href={`/shops/${s.id}/edit`}
+                        className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-gray-700 hover:text-forest-700 border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-sm"
+                      >
+                        <Pencil className="w-3 h-3" />
+                        Editar
+                      </Link>
+                      <DeleteShopButton shopId={s.id} shopName={s.name} />
+                    </div>
                   </div>
                 ))}
               </div>
