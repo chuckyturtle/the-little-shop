@@ -3,6 +3,6 @@
       "target": {
         "namespace": "android_app",
         "package_name": "app.vercel.the_little_shop.twa",
-        "sha256_cert_fingerprints": ["D8:62:27:E6:63:37:79:C3:99:50:1C:E7:97:13:E0:78:5D:64:FF:E4:91:37:AA:00:E4:CD:1F:A9:39:93:45:31"]
+        "sha256_cert_fingerprints": ["79:35:36:89:DE:AC:44:91:8F:7D:3C:65:80:CB:8D:72:E6:A0:5B:53:BF:05:83:37:83:2A:31:DF:78:B6:E3:79"]
       }
     }]
