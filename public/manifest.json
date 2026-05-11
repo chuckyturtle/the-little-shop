@@ -1,0 +1,27 @@
+{
+  "name": "The Little Shop",
+  "short_name": "Little Shop",
+  "description": "Descubre y registra tiendas locales de todo el mundo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F0E8",
+  "theme_color": "#2D6A4F",
+  "orientation": "portrait",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["shopping", "lifestyle", "maps"]
+}
